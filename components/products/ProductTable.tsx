@@ -1,48 +1,55 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import {
-  Product,
-} from "@/types/product";
-
-import {
-  formatPrice,
-} from "@/lib/utils";
+import { Product } from "@/types/product";
+import { formatPrice } from "@/lib/utils";
+import { Star } from "lucide-react";
 
 interface ProductTableProps {
   products: Product[];
 }
 
-const catelog = [{
-  name : "Product"
-}, {
-  name : "Category"
-}, {
-  name : "Price"
-},
+const catelog = [
   {
-    name : "Rating"
+    name: "Product",
   },
-{
-  name : "Stock"
-}, {
-  name : "Action"
-}]
+  {
+    name: "Category",
+  },
+  {
+    name: "Price",
+  },
+  {
+    name: "Rating",
+  },
+  {
+    name: "Stock",
+  },
+];
 
 export default function ProductTable({
   products,
 }: ProductTableProps) {
+  const router = useRouter();
+
+  const handleRowClick = (id: number) => {
+    router.push(`/products/${id}`);
+  };
+
   return (
-    <div className="overflow-hidden rounded-[8px] border-[2px_2px_1px_1px] bg-background">
+    <div className="overflow-hidden rounded-lg border-[3px_3px_2px_2px] bg-background">
       <div className="overflow-x-auto">
         <table className="w-full min-w-200 text-left">
           <thead className="border-b bg-sky-50">
             <tr>
               {catelog.map((c) => (
-                <th key={c.name} className="px-5 py-4 text-xs font-semibold uppercase text-neutral-600">
-                {c.name}
-              </th>
+                <th
+                  key={c.name}
+                  className="px-5 py-4 text-xs font-semibold uppercase text-neutral-600"
+                >
+                  {c.name}
+                </th>
               ))}
             </tr>
           </thead>
@@ -51,12 +58,19 @@ export default function ProductTable({
             {products.map((product) => (
               <tr
                 key={product.id}
-                className="hover:bg-neutral-50 cursor-pointer"
+                onClick={() =>
+                  handleRowClick(product.id)
+                }
+                className="cursor-pointer hover:bg-neutral-50"
               >
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-4">
                     <img
-                      src={product.thumbnail}
+                      src={
+                        product.thumbnail ||
+                        product.images?.[0] ||
+                        ""
+                      }
                       alt={product.title}
                       className="h-12 w-12 rounded-lg object-cover"
                     />
@@ -79,28 +93,15 @@ export default function ProductTable({
                 </td>
 
                 <td className="px-5 py-4 text-sm font-medium">
-                  {formatPrice(
-                    product.price
-                  )}
+                  {formatPrice(product.price)}
                 </td>
 
                 <td className="px-5 py-4 text-sm">
-                  <span>
-                    ⭐ {product.rating}
-                  </span>
+                        <div className="flex items-center gap-2"> <Star size={16} /> {product.rating}</div>
                 </td>
 
                 <td className="px-5 py-4 text-sm">
                   {product.stock}
-                </td>
-
-                <td className="px-5 py-4">
-                  <Link
-                    href={`/products/${product.id}`}
-                    className="text-sm font-medium underline"
-                  >
-                    View
-                  </Link>
                 </td>
               </tr>
             ))}

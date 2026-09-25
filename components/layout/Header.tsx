@@ -22,7 +22,7 @@ export default function Header() {
             href="/products"
             className="text-xl font-bold"
           >
-            Product Admin
+            ProDash
           </Link>
 
           <nav className="hidden gap-8 text-sm md:flex">

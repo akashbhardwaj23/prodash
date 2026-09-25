@@ -65,14 +65,14 @@ export default function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-lg space-y-6 rounded-3xl border border-white p-8 shadow"
+      className="w-full max-w-lg space-y-6 rounded-lg border-[4px_4px_2px_2px] p-6"
     >
       <div>
-        <h1 className="text-2xl font-bold">
-          Product Admin
+        <h1 className="text-3xl font-bold">
+          Login As Admin
         </h1>
 
-        <p className="mt-1 text-sm text-neutral-200">
+        <p className="mt-2 text-sm text-neutral-400">
           Sign in to manage products
         </p>
       </div>
@@ -93,7 +93,7 @@ export default function LoginForm() {
           onChange={(event) =>
             setUsername(event.target.value)
           }
-          className="w-full rounded-lg border p-3"
+          className="w-full rounded-lg border-[1px_1px_3px_3px] p-3 outline-sky-200 focus:ring-sky-200"
           placeholder="Username"
           required
         />
@@ -110,7 +110,7 @@ export default function LoginForm() {
           onChange={(event) =>
             setPassword(event.target.value)
           }
-          className="w-full rounded-lg border p-3"
+          className="w-full rounded-lg border-[1px_1px_3px_3px] p-3 outline-sky-200 focus:ring-sky-200"
           placeholder="Password"
           required
         />
@@ -119,14 +119,14 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full cursor-pointer rounded-lg bg-white p-3 text-sm text-black disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full cursor-pointer rounded-lg bg-background p-3 text-sm text-black border-[3px_3px_2px_2px] border-sky-200 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading
           ? "Logging in..."
           : "Login"}
       </button>
 
-      <div className="flex justify-center text-sm text-neutral-400">
+      <div className="flex justify-center text-sm text-neutral-500">
         <div>
           Demo credentials:
           <br />
