@@ -1,46 +1,100 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 import ProductDetails from "@/components/products/ProductDetails";
 import ProtectedRoute from "@/components/layout/ProtectedRoutes";
 
-import {
-  getProduct,
-} from "@/services/product.service";
+import { getProduct } from "@/services/product.service";
+import { Product } from "@/types/product";
 
-interface ProductPageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
+export default function ProductPage() {
+  const params = useParams();
 
-export default async function ProductPage({
-  params,
-}: ProductPageProps) {
-  const { id } = await params;
-
+  const id = params.id as string;
   const numericId = Number(id);
 
-  if (
-    !Number.isInteger(numericId) ||
-    numericId <= 0
-  ) {
-    return <ProductNotFound />;
-  }
+  const [product, setProduct] =
+    useState<Product | null>(null);
 
-  try {
-    const product =
-      await getProduct(id);
+  const [loading, setLoading] =
+    useState(true);
 
+  const [notFound, setNotFound] =
+    useState(false);
+
+  useEffect(() => {
+    if (
+      !Number.isInteger(numericId) ||
+      numericId <= 0
+    ) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+
+    const loadProduct = async () => {
+      try {
+        const localProduct =
+          localStorage.getItem(
+            `product-${id}`
+          );
+
+        if (localProduct) {
+          setProduct(
+            JSON.parse(localProduct)
+          );
+          setLoading(false);
+          return;
+        }
+        const result =
+          await getProduct(id);
+
+        setProduct(result);
+      } catch (error) {
+        console.error(
+          "Failed to load product:",
+          error
+        );
+
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id, numericId]);
+
+  if (loading) {
     return (
       <ProtectedRoute>
-        <ProductDetails
-          product={product}
-        />
+        <main className="flex min-h-screen items-center justify-center">
+          <p className="text-neutral-600">
+            Loading product...
+          </p>
+        </main>
       </ProtectedRoute>
     );
-  } catch {
-    return <ProductNotFound />;
   }
+
+  if (notFound || !product) {
+    return (
+      <ProtectedRoute>
+        <ProductNotFound />
+      </ProtectedRoute>
+    );
+  }
+
+  return (
+    <ProtectedRoute>
+      <ProductDetails
+        product={product}
+      />
+    </ProtectedRoute>
+  );
 }
 
 function ProductNotFound() {
@@ -58,7 +112,7 @@ function ProductNotFound() {
 
         <Link
           href="/products"
-          className="mt-6 inline-block rounded-lg bg-neutral px-5 py-3 text-sm font-medium text-white"
+          className="mt-6 inline-block rounded-lg bg-neutral px-5 py-3 text-sm font-medium text-background"
         >
           Back to Products
         </Link>

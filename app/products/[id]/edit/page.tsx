@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link";
 
 import Header from "@/components/layout/Header";
@@ -9,6 +10,9 @@ import {
   getProduct,
 } from "@/services/product.service";
 import { ArrowLeft } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Product } from "@/types/product";
 
 interface EditProductPageProps {
   params: Promise<{
@@ -16,23 +20,68 @@ interface EditProductPageProps {
   }>;
 }
 
-export default async function EditProductPage({
+export default function EditProductPage({
   params,
 }: EditProductPageProps) {
-  const { id } = await params;
+  const { id } : {id : string} = useParams()
 
-  const numericId = Number(id);
+  const [product, setProduct] = useState<Product | null>(null)
+    const [loading, setLoading] = useState(true)
 
-  if (
-    !Number.isInteger(numericId) ||
-    numericId <= 0
-  ) {
-    return <NotFound />;
+  const [notFound, setNotFound] = useState(false)
+
+useEffect(() => {
+  if(!id) return
+    const loadProduct = async () => {
+      try {
+        const localProduct =
+          localStorage.getItem(
+            `product-${id}`
+          );
+
+        if (localProduct) {
+         const parsedProduct = JSON.parse(localProduct);
+
+          setProduct(parsedProduct);
+          return;
+        }
+
+        const result =
+          await getProduct(id);
+
+        setProduct(result);
+      } catch (error) {
+        console.error(
+          "Failed to load product:",
+          error
+        );
+
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <div className="flex min-h-screen items-center justify-center">
+          <p>Loading product...</p>
+        </div>
+      </ProtectedRoute>
+    );
   }
 
-  try {
-    const product =
-      await getProduct(id);
+  if (notFound || !product) {
+    return (
+      <ProtectedRoute>
+       <NotFound/>
+      </ProtectedRoute>
+    );
+  }
 
     return (
       <ProtectedRoute>
@@ -65,10 +114,8 @@ export default async function EditProductPage({
         </div>
       </ProtectedRoute>
     );
-  } catch {
-    return <NotFound />;
   }
-}
+
 
 function NotFound() {
   return (

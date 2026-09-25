@@ -40,7 +40,7 @@ export default function ProductTable({
           <thead className="border-b bg-sky-50">
             <tr>
               {catelog.map((c) => (
-                <th className="px-5 py-4 text-xs font-semibold uppercase text-neutral-600">
+                <th key={c.name} className="px-5 py-4 text-xs font-semibold uppercase text-neutral-600">
                 {c.name}
               </th>
               ))}

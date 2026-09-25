@@ -91,7 +91,7 @@ export default function ProductDetails({
 
         <div className="grid gap-8 lg:grid-cols-2">
           <ProductGallery
-            images={product.images}
+            images={product.images ?? []}
             title={product.title}
           />
 

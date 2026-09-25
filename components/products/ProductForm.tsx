@@ -15,10 +15,12 @@ import Button from "@/components/ui/button";
 
 import {
   createProduct,
+  getCategories,
   updateProduct,
 } from "@/services/product.service";
 
 import {
+  Category,
   Product,
   ProductFormData,
 } from "@/types/product";
@@ -64,6 +66,30 @@ export default function ProductForm({
 
   const [serverError, setServerError] =
     useState("");
+  const [categories, setCategories] =
+    useState<Category[]>([]);
+
+  const [categoriesLoading, setCategoriesLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+
+        setCategories(data);
+      } catch (error) {
+        console.error(
+          "Failed to load categories:",
+          error
+        );
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     if (
@@ -186,6 +212,11 @@ export default function ProductForm({
             payload
           );
 
+        localStorage.setItem(
+          `product-${created.id}`,
+          JSON.stringify(created)
+        );
+
         router.replace(
           `/products/${created.id}`
         );
@@ -193,10 +224,69 @@ export default function ProductForm({
         mode === "edit" &&
         product
       ) {
-        await updateProduct(
-          product.id,
-          payload
+
+        const storageKey =
+          `product-${product.id}`;
+
+        const existingLocalProduct =
+          localStorage.getItem(storageKey);
+
+        let updated: Partial<Product> = {};
+
+        if (!existingLocalProduct) {
+          updated = await updateProduct(
+            product.id,
+            payload
+          );
+        }
+
+        const localProduct: Product = {
+          ...product,
+          ...updated,
+
+          title: payload.title ?? product.title,
+          description:
+            payload.description ??
+            product.description,
+          category:
+            payload.category ??
+            product.category,
+          price:
+            payload.price ??
+            product.price,
+          stock:
+            payload.stock ??
+            product.stock,
+          brand:
+            payload.brand ??
+            product.brand,
+
+          images:
+            updated.images ??
+            product.images ??
+            [],
+
+          thumbnail:
+            updated.thumbnail ??
+            product.thumbnail ??
+            "",
+
+          tags:
+            updated.tags ??
+            product.tags ??
+            [],
+
+          reviews:
+            updated.reviews ??
+            product.reviews ??
+            [],
+        };
+
+        localStorage.setItem(
+          `product-${product.id}`,
+          JSON.stringify(localProduct)
         );
+
 
         router.replace(
           `/products/${product.id}`
@@ -257,9 +347,9 @@ export default function ProductForm({
             placeholder="Product description"
             rows={5}
             className={`
-              w-full rounded-lg border
+              w-full rounded-lg border-[1px_1px_2px_2px]
               px-3 py-2.5 text-sm
-              outline-none focus:border-black
+              outline-none focus:border-sky-200
               ${errors.description
                 ? "border-red-500"
                 : "border-gray-300"
@@ -274,18 +364,61 @@ export default function ProductForm({
           )}
         </div>
 
-        <Input
-          value={form.category}
-          onChange={(event) =>
-            updateField(
-              "category",
-              event.target.value
-            )
-          }
-          placeholder="Category"
-        />
+        <div>
+          <label className="mb-1 block text-sm font-medium text-neutral-600">
+            Category
+          </label>
 
-        <Input
+          <select
+            value={form.category}
+            onChange={(event) =>
+              updateField(
+                "category",
+                event.target.value
+              )
+            }
+            disabled={categoriesLoading}
+            className={`
+          w-full rounded-lg border-[1px_1px_2px_2px]
+          px-4 py-2.5 text-sm
+          outline-none
+                  border-neutral-300
+          focus:border-sky-200
+          ${errors.category
+                    ? "border-red-500"
+                    : "border-neutral-100"
+                  }
+          ${categoriesLoading
+                    ? "cursor-not-allowed bg-neutral-100"
+                    : "bg-white"
+                  }
+    `}
+          >
+            <option value="">
+              {categoriesLoading
+                ? "Loading categories..."
+                : "Select category"}
+            </option>
+
+            {categories.map((category) => (
+              <option
+                key={category.slug}
+                value={category.slug}
+              >
+                {category.name}
+              </option>
+            ))}
+          </select>
+
+          {errors.category && (
+            <p className="mt-1 text-xs text-red-600">
+              {errors.category}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-6">
+          <Input
           value={form.brand}
           onChange={(event) =>
             updateField(
@@ -295,6 +428,7 @@ export default function ProductForm({
           }
           placeholder="Brand"
         />
+        </div>
 
         <Input
           type="number"

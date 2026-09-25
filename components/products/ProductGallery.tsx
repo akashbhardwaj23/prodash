@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useState,
 } from "react";
 
@@ -13,10 +14,19 @@ export default function ProductGallery({
   images,
   title,
 }: ProductGalleryProps) {
+  const safeImages = images ?? [];
+
   const [selectedImage, setSelectedImage] =
     useState(
       images[0] || ""
     );
+
+      useEffect(() => {
+    setSelectedImage(
+      safeImages[0] || ""
+    );
+  }, [images]);
+    
 
   if (!images.length) {
     return (
