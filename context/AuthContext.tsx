@@ -1,12 +1,9 @@
 "use client";
 
-import LoginForm from "@/components/auth/LoginForm";
 import {
   createContext,
-  useContext,
   useEffect,
   useState,
-  ReactNode,
 } from "react";
 
 
@@ -18,7 +15,7 @@ interface AuthContextInterface {
 }
 
 
-const AuthContext = createContext<AuthContextInterface | undefined>(undefined)
+export const AuthContext = createContext<AuthContextInterface | undefined>(undefined)
 
 export function AuthProvider({
     children
@@ -26,7 +23,7 @@ export function AuthProvider({
     children : React.ReactNode
 }){
      const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -58,15 +55,4 @@ export function AuthProvider({
     {children}
   </AuthContext.Provider>
 
-}
-
-
-export function useAuth(){
-    const context = useContext(AuthContext);
-
-    if(!context){
-        throw new Error("AuthContext must be provided");
-    }
-
-    return context;
 }

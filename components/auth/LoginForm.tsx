@@ -1,20 +1,66 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
+import { loginUser } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import {
+  FormEvent,
+  useState,
+} from "react";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] =
+    useState("");
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [password, setPassword] =
+    useState("");
 
-  const handleSubmit = async () => {
+  const [error, setError] =
+    useState("");
 
-  }
+  const [loading, setLoading] =
+    useState(false);
+
+  const handleSubmit = async (
+    e: FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    if (loading) {
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await loginUser({
+        username,
+        password,
+      });
+
+      console.log("Login response:", response);
+
+      login(
+        response.accessToken,
+        response
+      );
+
+      router.push("/products");
+
+    } catch (error) {
+      console.error("Login error:", error);
+
+      setError(
+        "Invalid Username and Password"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <form
@@ -22,7 +68,10 @@ export default function LoginForm() {
       className="w-full max-w-lg space-y-6 rounded-3xl border border-white p-8 shadow"
     >
       <div>
-        <h1 className="text-2xl font-bold">Product Admin</h1>
+        <h1 className="text-2xl font-bold">
+          Product Admin
+        </h1>
+
         <p className="mt-1 text-sm text-neutral-200">
           Sign in to manage products
         </p>
@@ -41,7 +90,9 @@ export default function LoginForm() {
 
         <input
           value={username}
-          onChange={(event) => setUsername(event.target.value)}
+          onChange={(event) =>
+            setUsername(event.target.value)
+          }
           className="w-full rounded-lg border p-3"
           placeholder="Username"
           required
@@ -56,7 +107,9 @@ export default function LoginForm() {
         <input
           type="password"
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          onChange={(event) =>
+            setPassword(event.target.value)
+          }
           className="w-full rounded-lg border p-3"
           placeholder="Password"
           required
@@ -64,19 +117,22 @@ export default function LoginForm() {
       </div>
 
       <button
+        type="submit"
         disabled={loading}
-        className="w-full rounded-lg text-sm bg-white cursor-pointer p-3 text-black disabled:opacity-50"
+        className="w-full cursor-pointer rounded-lg bg-white p-3 text-sm text-black disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? "Logging in..." : "Login"}
+        {loading
+          ? "Logging in..."
+          : "Login"}
       </button>
 
-      <div className="text-sm text-neutral-400 flex justify-center">
+      <div className="flex justify-center text-sm text-neutral-400">
         <div>
-            Demo credentials:
-        <br />
-        Username: <b>emilys</b>
-        <br />
-        Password: <b>emilyspass</b>
+          Demo credentials:
+          <br />
+          Username: <b>emilys</b>
+          <br />
+          Password: <b>emilyspass</b>
         </div>
       </div>
     </form>

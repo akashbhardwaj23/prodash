@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { Category, Product, ProductDetails, ProductResponse } from "@/types/product";
+import { Category, Product, ProductResponse } from "@/types/product";
 
 
 interface GetProductsParams {
@@ -26,17 +26,17 @@ export async function getProducts(
 
   let url = "/products";
 
-  if (search) {
+  if (search?.trim()) {
     url = "/products/search";
   } else if (category) {
-    url = `/products/category/${category}`;
+    url = `/products/category/${encodeURIComponent(category)}`;
   }
 
   const response = await api.get<ProductResponse>(url, {
     params: {
       limit,
       skip,
-      q: search || undefined,
+      q: search?.trim() || undefined,
       sortBy: sortBy || undefined,
       order: sortBy ? order : undefined,
     },
@@ -50,8 +50,8 @@ export async function getProducts(
 export async function getProduct(
   id: string,
   signal?: AbortSignal
-): Promise<ProductDetails> {
-  const response = await api.get<ProductDetails>(
+): Promise<Product> {
+  const response = await api.get<Product>(
     `/products/${id}`,
     { signal }
   );
@@ -85,7 +85,7 @@ export async function updateProduct(
   return response.data;
 }
 
-export async function deleteProduct(id: number) {
+export async function deleteProduct(id: number) : Promise<Product> {
   const response = await api.delete(`/products/${id}`);
 
   return response.data;
